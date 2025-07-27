@@ -1,3 +1,3 @@
 # wallnix
 <br/><br/>
-![Screenshot](screenshots/Screenshot from 2025-07-27 06-33-24.png)
+![Screenshot](https://github.com/msalehicode/wallnix/blob/master/screenshots/Screenshot%20from%202025-07-27%2006-33-24.png)
