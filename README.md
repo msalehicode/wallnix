@@ -1,5 +1,13 @@
 # wallnix
 Wallnix is a simple animated wallpaper app for Linux, built with Qt. It lets you set GIFs or videos as your desktop background. 
 
-<br/><br/>
-![Screenshot](https://github.com/msalehicode/wallnix/blob/master/screenshots/Screenshot%20from%202025-07-27%2006-33-24.png)
+
+# Preview gif:
+![Preview](./screenshots/last.gif)
+
+# Preview mp4:
+
+
+https://github.com/user-attachments/assets/d3419ef5-783b-444e-ac08-2c6e97b03780
+
+
