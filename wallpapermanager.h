@@ -9,12 +9,12 @@
 #include <QDebug>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
-// #include <QThread>
 #include <QFile>
 
 class WallpaperManager : public QObject {
     Q_OBJECT
 public:
+
 
     explicit WallpaperManager(QObject *parent = nullptr) : QObject(parent) {
         display = XOpenDisplay(nullptr);
@@ -22,17 +22,39 @@ public:
             qFatal("Failed to open X11 display");
         }
         desktopWindow = findDesktopWindow(display);
-    }
 
-    Q_INVOKABLE void startWallpaperbyQML(const QString &videoPath)
+        //suppose fetch from QSetting or database which user saves
+        setCurrentWallpaperPath("./resources/wallpaper.gif");
+        startWallpaper();
+
+    }
+    Q_INVOKABLE void startWallpaperbyQML()
     {
-        qInfo() << "start wallpaper";
-        startWallpaper(videoPath);
+        startWallpaper();
     }
     Q_INVOKABLE void stopWallpaperbyQML()
     {
-        qInfo() << "stop wallpaper";
         stopWallpaper();
+    }
+    Q_INVOKABLE void changeWallpaperbyQML(const QString &videoPath)
+    {
+        QString result= setCurrentWallpaperPath(videoPath);
+        if(result=="ok")
+        {
+            stopWallpaper();
+            startWallpaper();
+            qInfo() << "wallpaper path changed";
+        }
+        else
+        {
+            qInfo() << "could not change wallaper path";
+        }
+        emit resultChangeWallpaperPath(result);
+
+    }
+    Q_INVOKABLE void getCurrentWallpaper()
+    {
+        emit currentWallpaperIs(currentWallpaperPath);
     }
 
     ~WallpaperManager() {
@@ -44,12 +66,7 @@ public:
         }
     }
 
-    void startWallpaper(const QString &videoPath) {
-
-        if (!QFile::exists(videoPath)) {
-            qWarning() << "File does not exist:" << videoPath;
-            return;
-        }
+    void startWallpaper() {
 
         if (!display) return;
         if (!labels.isEmpty()) {
@@ -68,9 +85,9 @@ public:
             label->resize(geo.size());
             label->move(geo.topLeft());
 
-            QMovie* movie = new QMovie(videoPath);
+            QMovie* movie = new QMovie(currentWallpaperPath);
             if (!movie->isValid()) {
-                qWarning() << "Invalid movie file:" << videoPath;
+                qWarning() << "Invalid movie file:" << currentWallpaperPath;
                 delete movie;
                 delete label;
                 continue;
@@ -87,8 +104,6 @@ public:
 
 
             movie->start();
-            // QThread::msleep(500);  // small delay to ensure cleanup
-            qInfo()<<"there we go, check now.";
             label->show();
             qInfo() << "window id=" << label->winId();
             // XReparentWindow(display, label->winId(), desktopWindow, geo.x(), geo.y());
@@ -110,8 +125,6 @@ public:
         movies.clear();
 
         for (auto label : labels) {
-            // XUnmapWindow(display, label->winId());
-            // XReparentWindow(display, label->winId(), DefaultRootWindow(display), 0, 0);
             label->hide();
             // label->deleteLater();
             delete label;
@@ -123,11 +136,38 @@ public:
         }
     }
 
+    QString setCurrentWallpaperPath(const QString &newCurrentWallpaperPath)
+    {
+        QString res;
+        if (newCurrentWallpaperPath.endsWith(".gif", Qt::CaseInsensitive))
+        {
+            if (QFile::exists(newCurrentWallpaperPath))
+            {
+                currentWallpaperPath = newCurrentWallpaperPath;
+                res = "ok";
+            }
+            else
+            {
+                qWarning() << "File does not exist:" << newCurrentWallpaperPath;
+                res = "file does not exists.";
+            }
+
+        }
+        else
+        {
+            res = "file format does not supported.";
+            qWarning() << "File format does not supported:" << newCurrentWallpaperPath;
+        }
+
+        return res;
+    }
+
 private:
     Display* display = nullptr;
     Window desktopWindow;
     QList<QLabel*> labels;
     QList<QMovie*> movies;
+    QString currentWallpaperPath;
 
     Window findDesktopWindow(Display* display) {
         Window root = DefaultRootWindow(display);
@@ -172,4 +212,9 @@ private:
 
         return root;
     }
+
+signals:
+    void currentWallpaperIs(const QString& currentWPath);
+    void resultChangeWallpaperPath(const QString& res);
 };
+

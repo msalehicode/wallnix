@@ -1,1 +1,0 @@
-#include "wallpapermanager.h"
