@@ -13,6 +13,10 @@
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <QFile>
+#include <QFileInfo>
+
+
+#include "wallpaperinstance.h"
 
 class WallpaperManager : public QObject {
     Q_OBJECT
@@ -34,6 +38,7 @@ private:
     QList<QMovie*> movies;
     Window findDesktopWindow(Display* display);
 
+    QList<WallpaperInstance*> wallpaperInstances;
 };
 
 #endif

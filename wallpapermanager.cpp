@@ -10,38 +10,6 @@ WallpaperManager::WallpaperManager(QObject *parent) : QObject(parent)
     desktopWindow = findDesktopWindow(display);
 }
 
-// void WallpaperManager::startWallpaperbyQML()
-// {
-//     startWallpaper();
-// }
-
-// void WallpaperManager::stopWallpaperbyQML()
-// {
-//     stopWallpaper();
-// }
-
-// void WallpaperManager::changeWallpaperbyQML(const QString &videoPath)
-// {
-//     QString result= setCurrentWallpaperPath(videoPath);
-//     if(result=="ok")
-//     {
-//         stopWallpaper();
-//         startWallpaper();
-//         settingsManager.setValue("currentWallpaperPath", videoPath);
-//         qInfo() << "wallpaper path changed";
-//     }
-//     else
-//     {
-//         qInfo() << "could not change wallaper path";
-//     }
-//     emit resultChangeWallpaperPath(result);
-
-// }
-
-// void WallpaperManager::getCurrentWallpaper()
-// {
-//     emit currentWallpaperIs(currentWallpaperPath);
-// }
 
 WallpaperManager::~WallpaperManager()
 {
@@ -54,79 +22,45 @@ WallpaperManager::~WallpaperManager()
 }
 
 void WallpaperManager::startWallpaper() {
-
     if (!display) return;
-    if (!labels.isEmpty()) {
+    if (!wallpaperInstances.isEmpty()) {
         qWarning() << "Wallpaper already running, stop first!";
         return;
     }
 
+    qDebug() << "desktopWindow =" << desktopWindow;
+    if (desktopWindow == 0) {
+        desktopWindow = DefaultRootWindow(display);
+    }
+
+
     const auto screens = QApplication::screens();
     for (QScreen* screen : screens) {
-        QLabel* label = new QLabel(nullptr);
-        label->setWindowFlags(Qt::FramelessWindowHint | Qt::X11BypassWindowManagerHint);
-        label->setAttribute(Qt::WA_TransparentForMouseEvents);
-        label->setFocusPolicy(Qt::NoFocus);
-
-        QRect geo = screen->geometry();
-        label->resize(geo.size());
-        label->move(geo.topLeft());
-
-        QMovie* movie = new QMovie(currentWallpaperPath);
-        if (!movie->isValid()) {
-            qWarning() << "Invalid movie file:" << currentWallpaperPath;
-            delete movie;
-            delete label;
-            continue;
-        }
-
-        movie->setScaledSize(geo.size());
-        label->setMovie(movie);
-
-
-        // label->setWindowFlags(Qt::FramelessWindowHint | Qt::X11BypassWindowManagerHint);
-        label->setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
-        label->setAttribute(Qt::WA_X11NetWmWindowTypeDesktop);
-
-
-
-        movie->start();
-        label->show();
-        qInfo() << "window id=" << label->winId();
-        // XReparentWindow(display, label->winId(), desktopWindow, geo.x(), geo.y());
-        XMapWindow(display, label->winId());
-        label->raise();
-
-        labels.append(label);
-        movies.append(movie);
+        WallpaperInstance* instance = new WallpaperInstance(screen, currentWallpaperPath, display, desktopWindow);
+        wallpaperInstances.append(instance);
     }
     XFlush(display);
 }
 
+
 void WallpaperManager::stopWallpaper() {
-    for (auto movie : movies) {
-        movie->stop();
-        // movie->deleteLater();
-        delete movie;
-    }
-    movies.clear();
-
-    for (auto label : labels) {
-        label->hide();
-        // label->deleteLater();
-        delete label;
-    }
-    labels.clear();
-
-    if (display) {
-        XFlush(display);
-    }
+    qDeleteAll(wallpaperInstances);
+    wallpaperInstances.clear();
+    if (display) XFlush(display);
 }
+
 
 QString WallpaperManager::setCurrentWallpaperPath(const QString &newCurrentWallpaperPath)
 {
     QString res;
-    if (newCurrentWallpaperPath.endsWith(".gif", Qt::CaseInsensitive))
+
+    // List of supported video extensions (lowercase)
+    const QStringList videoExtensions = {".mp4", ".avi", ".mkv", ".mov", ".webm"};
+
+    // Convert file extension to lowercase for case-insensitive comparison
+    QString ext = QFileInfo(newCurrentWallpaperPath).suffix().toLower();
+
+    if (ext == "gif" || videoExtensions.contains("." + ext))
     {
         if (QFile::exists(newCurrentWallpaperPath))
         {
@@ -136,14 +70,13 @@ QString WallpaperManager::setCurrentWallpaperPath(const QString &newCurrentWallp
         else
         {
             qWarning() << "File does not exist:" << newCurrentWallpaperPath;
-            res = "file does not exists.";
+            res = "file does not exist.";
         }
-
     }
     else
     {
-        res = "file format does not supported.";
-        qWarning() << "File format does not supported:" << newCurrentWallpaperPath;
+        res = "file format not supported.";
+        qWarning() << "File format not supported:" << newCurrentWallpaperPath;
     }
 
     return res;

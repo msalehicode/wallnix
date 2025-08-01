@@ -175,6 +175,7 @@ void Backend::initApp()
 {
     wallpaperManager.startWallpaper();
 
+    QThread::sleep(3);
     bool res_trayIcon=false;
     while(res_trayIcon==false)
     {

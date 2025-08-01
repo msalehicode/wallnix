@@ -46,7 +46,12 @@ Page
     FileDialog {
         id: fileDialog
         currentFolder : "file:///"
-        nameFilters: [ "GIF Files (*.gif)" ]
+        nameFilters:
+        [
+            "All Supported Files (*.gif *.mp4 *.avi *.mkv *.mov *.webm)",
+            "GIF Files (*.gif)",
+            "Video Files (*.mp4 *.avi *.mkv *.mov *.webm)"
+        ]
         onAccepted:
         {
             //convert to local path to C++ find it from files
