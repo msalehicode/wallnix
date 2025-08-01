@@ -6,14 +6,23 @@ import QtQuick.Controls.Material
 Window {
     id: rootWindow
     visible: false
-    width: 700
-    height: 700
+    width: 200
+    height: 100
     title: "Wallnix"
     color: "#222222"
     onClosing: function(event)
     {
         event.accepted = false;
         rootWindow.visible = false;
+        loader.source="homePage.qml"
+    }
+    onWidthChanged:
+    {
+        backend.setSettingValue("last_window_width",width)
+    }
+    onHeightChanged:
+    {
+        backend.setSettingValue("last_window_height",height)
     }
 
     Loader
@@ -24,7 +33,7 @@ Window {
         onLoaded:
         {
             if (loader.source.toString() === "changeWallpaper.qml")
-                wallpaperManager.getCurrentWallpaper();
+                backend.getCurrentWallpaper();
         }
 
     }
@@ -79,7 +88,7 @@ Window {
         height:60
         CustomSingleButton
         {
-            id:stopWallpaper2
+            id:openDrawerButton
             setButtonText:"+";
             setButtonBorderColor: "transparent";
             onButtonClicked:
@@ -92,12 +101,17 @@ Window {
 
     Connections
     {
-        target: wallpaperManager
+        target: backend
         function onCurrentWallpaperIs(thePath)
         {
             console.log ("current path is="+thePath)
             // After the component is loaded, we can to our property
             loader.item.playingPath = thePath;
         }
+    }
+    Component.onCompleted:
+    {
+        rootWindow.height = backend.getSettingValue("last_window_height")
+        rootWindow.width = backend.getSettingValue("last_window_width")
     }
 }

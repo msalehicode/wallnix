@@ -117,7 +117,7 @@ Page
                     onClicked:
                     {
                         if(newPath!="")
-                            wallpaperManager.changeWallpaperbyQML(newPath);
+                            backend.changeWallpaperbyQML(newPath);
                     }
                 }
                 Button
@@ -178,7 +178,7 @@ Page
 
     Connections
     {
-        target: wallpaperManager
+        target: backend
         function onResultChangeWallpaperPath(res)
         {
             if(res === "ok")

@@ -31,6 +31,11 @@ qt_add_qml_module(appwallnix
     QML_FILES homePage.qml
     RESOURCES resources/tray.svg
     RESOURCES resources/wallpaper.gif
+    SOURCES wallpapermanager.cpp
+    SOURCES settingsmanager.h settingsmanager.cpp
+    SOURCES
+    SOURCES autostartmanager.h autostartmanager.cpp
+    SOURCES backend.h backend.cpp
 )
 
 

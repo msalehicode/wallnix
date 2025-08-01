@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Wallnix
+Exec=/usr/bin/wallnix
+Icon=wallnix
+Type=Application
+Categories=Utility;
+Comment=Wallpaper Manager using Qt and QML
+Terminal=false
+StartupNotify=true

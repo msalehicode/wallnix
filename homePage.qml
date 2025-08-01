@@ -28,7 +28,7 @@ Page
                     setButtonBorderColor: "transparent";
                     onButtonClicked:
                     {
-                        wallpaperManager.startWallpaperbyQML();
+                        backend.startWallpaperbyQML();
                     }
                 }
             }
@@ -44,7 +44,7 @@ Page
                     setButtonBorderColor: "transparent";
                     onButtonClicked:
                     {
-                        wallpaperManager.stopWallpaperbyQML()
+                        backend.stopWallpaperbyQML()
                     }
                 }
             }
