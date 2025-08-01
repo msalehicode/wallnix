@@ -37,8 +37,5 @@ int main(int argc, char *argv[])
             &app) == false)
                 return -1;
 
-    if(backend.setupTrayIcon()==false)
-        return -1;
-
     return app.exec();
 }

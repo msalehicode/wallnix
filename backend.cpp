@@ -14,7 +14,6 @@ Backend::Backend(QObject *parent)
         qInfo() << "could not fetched wallpaper from QSetting into wallpaper, default wallpaper replaced";
     }
 
-    wallpaperManager.startWallpaper();
 }
 
 bool Backend::setWindow(QQuickWindow* window, QApplication* app)
@@ -26,11 +25,14 @@ bool Backend::setWindow(QQuickWindow* window, QApplication* app)
     }
     m_window = window;
     m_app = app;
+
+    initApp();
     return true;
 }
 
 bool Backend::setupTrayIcon()
 {
+
     if (!QSystemTrayIcon::isSystemTrayAvailable())
     {
         qWarning("System tray is not available on this system");
@@ -57,16 +59,16 @@ bool Backend::setupTrayIcon()
 
     // Show or hide window when clicking tray icon or menu action
     QObject::connect(openAction, &QAction::triggered, [this]()
-        {
-            if (m_window->isVisible())
-                m_window->hide();
-            else
-            {
-                m_window->show();
-                m_window->raise();
-                m_window->requestActivate();
-            }
-        });
+                     {
+                         if (m_window->isVisible())
+                             m_window->hide();
+                         else
+                         {
+                             m_window->show();
+                             m_window->raise();
+                             m_window->requestActivate();
+                         }
+                     });
 
     QObject::connect(quitAction, &QAction::triggered, m_app, &QApplication::quit);
     QObject::connect(startAction, &QAction::triggered, &wallpaperManager, &WallpaperManager::startWallpaper);
@@ -167,4 +169,20 @@ void Backend::setRunOnStartUp(const QString &status)
 void Backend::setAutoPause(const QString &status)
 {
     //code
+}
+
+void Backend::initApp()
+{
+    wallpaperManager.startWallpaper();
+
+    bool res_trayIcon=false;
+    while(res_trayIcon==false)
+    {
+        res_trayIcon = setupTrayIcon();
+        if(res_trayIcon==false)
+        {
+            qWarning("System tray is not available on this system wait 3s try again...");
+            QThread::sleep(3);
+        }
+    }
 }

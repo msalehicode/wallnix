@@ -11,6 +11,8 @@
 #include <QQuickWindow>
 
 
+#include <QThread>
+
 #include "autostartmanager.h"
 #include "settingsmanager.h"
 #include "wallpapermanager.h"
@@ -25,7 +27,7 @@ public:
 
     //init functions to call by main
     bool setWindow(QQuickWindow *window, QApplication* app);
-    bool setupTrayIcon();
+    bool setupTrayIcon(); //should run after window set!
 
 
     //qml
@@ -49,6 +51,8 @@ private:
     QApplication* m_app;
     QSystemTrayIcon m_trayIcon;
     QMenu m_menu;
+
+    void initApp();//to control flow (do tray icon, startWallpaper after window set.
 
 signals:
     void currentWallpaperIs(const QString& currentWPath);
