@@ -1,9 +1,0 @@
-Package: wallnix
-Version: 1.0.0
-Section: utils
-Priority: optional
-Architecture: amd64
-Depends: libqt6core6, libqt6gui6, libqt6qml6, libqt6quick6, libqt6widgets6, libqt6opengl6, libqt6network6, libqt6dbus6, libx11-6, libxcb1
-Maintainer: Your Name <you@example.com>
-Description: Wallnix wallpaper tool
- A wallpaper manager using Qt QML and C++.
