@@ -61,20 +61,64 @@ WallpaperInstance::WallpaperInstance(QScreen *screen, const QString &filePath, D
         container->show();
 
         // VLC setup
-        const char* const vlc_args[] = {"--quiet" }; //"--no-xlib"
+        const char* const vlc_args[] = {"--quiet"}; //"--no-xlib"
         vlcInstance = libvlc_new(1, vlc_args);
         if (!vlcInstance) {
             qWarning() << "Failed to create VLC instance.";
             return;
         }
+
         QByteArray filePathBytes = QFile::encodeName(filePath);
         vlcMedia = libvlc_media_new_path(vlcInstance, filePathBytes.constData());
 
-        // Add loop option here
-        libvlc_media_add_option(vlcMedia, ":input-repeat=-1");
-        libvlc_media_add_option(vlcMedia, ":repeat");
-
         vlcPlayer = libvlc_media_player_new_from_media(vlcMedia);
+
+        libvlc_event_manager_t* eventManager = libvlc_media_player_event_manager(vlcPlayer);
+        isLoopEnabled=true;
+        libvlc_event_attach(eventManager, libvlc_MediaPlayerEndReached,
+                            [](const libvlc_event_t* event, void* userData) {
+                                WallpaperInstance* instance = static_cast<WallpaperInstance*>(userData);
+                                if (instance && instance->isLoopEnabled) {
+                                    // Post to Qt main thread with a slight delay
+                                    QMetaObject::invokeMethod(QCoreApplication::instance(), [instance]() {
+                                        libvlc_media_player_stop(instance->vlcPlayer);
+                                        // libvlc_media_player_set_media(instance->vlcPlayer, instance->vlcMedia);
+                                        libvlc_media_player_play(instance->vlcPlayer);
+                                        qInfo() << "Restarted video on main thread";
+                                    }, Qt::QueuedConnection);
+                                }
+                            }, this);
+
+        libvlc_state_t state = libvlc_media_player_get_state(vlcPlayer);
+        switch(state) {
+        case libvlc_NothingSpecial: qInfo() << "State: Nothing special"; break;
+        case libvlc_Opening: qInfo() << "State: Opening"; break;
+        case libvlc_Buffering: qInfo() << "State: Buffering"; break;
+        case libvlc_Playing: qInfo() << "State: Playing"; break;
+        case libvlc_Paused: qInfo() << "State: Paused"; break;
+        case libvlc_Stopped: qInfo() << "State: Stopped"; break;
+        case libvlc_Ended: qInfo() << "State: Ended"; break;
+        case libvlc_Error: qInfo() << "State: Error"; break;
+        default: qInfo() << "State: Unknown"; break;
+        }
+
+        // make vlc loop second approach to do loop, but its not smooth n optimize
+        // loopTimer = new QTimer();
+        // loopTimer->setInterval(0);  // check every 1 second
+        // QObject::connect(loopTimer, &QTimer::timeout, [this]() {
+        //     if (vlcPlayer && libvlc_media_player_get_state(vlcPlayer) == libvlc_Ended)
+        //     {
+        //         libvlc_media_player_stop(vlcPlayer);               // ✅ reset internal state
+        //         libvlc_media_player_set_media(vlcPlayer, vlcMedia); // ⬅ required if media is lost
+        //         libvlc_media_player_play(vlcPlayer);               // ✅ restart
+        //         qInfo() << "qtimer found video is eneded";
+        //     }
+        // });
+        // loopTimer->start();
+        qInfo() << "Using libVLC version:" << libvlc_get_version();
+
+
+
         libvlc_media_player_set_xwindow(vlcPlayer, container->winId());
         libvlc_media_player_play(vlcPlayer);
 
@@ -106,6 +150,10 @@ WallpaperInstance::~WallpaperInstance() {
         }
         if (vlcInstance) {
             libvlc_release(vlcInstance);
+        }
+        if (loopTimer) {
+            loopTimer->stop();
+            delete loopTimer;
         }
     }
 }
