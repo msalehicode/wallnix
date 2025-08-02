@@ -43,10 +43,12 @@ void WallpaperManager::startWallpaper() {
 }
 
 
-void WallpaperManager::stopWallpaper() {
+void WallpaperManager::stopWallpaper()
+{
     qDeleteAll(wallpaperInstances);
     wallpaperInstances.clear();
-    if (display) XFlush(display);
+    if (display)
+        XFlush(display);
 }
 
 
@@ -82,6 +84,40 @@ QString WallpaperManager::setCurrentWallpaperPath(const QString &newCurrentWallp
     return res;
 }
 
+void WallpaperManager::setMuteVideo(bool status)
+{
+    for (WallpaperInstance* instance : wallpaperInstances) {
+        if (instance && instance->type == WallpaperInstance::Type::Video) {
+            instance->muteVideoSound(status);
+        }
+    }
+}
+void WallpaperManager::setLoopVideo(bool status)
+{
+    for (WallpaperInstance* instance : wallpaperInstances) {
+        if (instance && instance->type == WallpaperInstance::Type::Video) {
+            instance->loopVideo(status);
+        }
+    }
+}
+
+void WallpaperManager::setVideoSoundVolume(int vol)
+{
+    for (WallpaperInstance* instance : wallpaperInstances) {
+        if (instance && instance->type == WallpaperInstance::Type::Video) {
+            instance->setVideoSoundVolume(vol);
+        }
+    }
+}
+
+void WallpaperManager::videoPauseOrResume()
+{
+    for (WallpaperInstance* instance : wallpaperInstances) {
+        if (instance && instance->type == WallpaperInstance::Type::Video) {
+            instance->pauseResume();
+        }
+    }
+}
 Window WallpaperManager::findDesktopWindow(Display *display) {
     Window root = DefaultRootWindow(display);
     Atom desktopAtom = XInternAtom(display, "_NET_WM_WINDOW_TYPE_DESKTOP", False);

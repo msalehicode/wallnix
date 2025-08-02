@@ -1,7 +1,46 @@
 #include "wallpaperinstance.h"
 
+void WallpaperInstance::loopVideo(bool loop)
+{
+    isVlcLoopEnabled = loop;
+}
+
+void WallpaperInstance::muteVideoSound(bool mute)
+{
+    isVlcSoundMuted = mute;
+    libvlc_audio_set_mute(vlcPlayer, isVlcSoundMuted);
+}
+
+void WallpaperInstance::setVideoSoundVolume(int vol)
+{
+    if(vol >=0 || vol <=100)
+    {
+        if(isVlcSoundMuted==true)
+            muteVideoSound(false);
+
+        videoSoundVolume = vol;
+        libvlc_audio_set_volume(vlcPlayer, videoSoundVolume);
+    }
+    else
+    {
+        qInfo() << " invalid volume value";
+    }
+}
+
+void WallpaperInstance::pauseResume()
+{
+    libvlc_media_player_pause(vlcPlayer);
+    // libvlc_media_player_set_pause(vlcPlayer, 1);
+    // libvlc_media_player_set_pause(vlcPlayer, 0);
+}
+
 WallpaperInstance::WallpaperInstance(QScreen *screen, const QString &filePath, Display *display,  Window desktopWindow)
 {
+    //set default values but in parent (wallpapaerManager) will set these values from settings/config
+    isVlcLoopEnabled=true;
+    isVlcSoundMuted=false;
+    videoSoundVolume=50;
+
     QRect geo = screen->geometry();
 
     if (filePath.endsWith(".gif", Qt::CaseInsensitive)) {
@@ -76,11 +115,10 @@ WallpaperInstance::WallpaperInstance(QScreen *screen, const QString &filePath, D
         vlcPlayer = libvlc_media_player_new_from_media(vlcMedia);
 
         libvlc_event_manager_t* eventManager = libvlc_media_player_event_manager(vlcPlayer);
-        isLoopEnabled=true;
         libvlc_event_attach(eventManager, libvlc_MediaPlayerEndReached,
                             [](const libvlc_event_t* event, void* userData) {
                                 WallpaperInstance* instance = static_cast<WallpaperInstance*>(userData);
-                                if (instance && instance->isLoopEnabled) {
+                                if (instance && instance->isVlcLoopEnabled) {
                                     // Post to Qt main thread with a slight delay
                                     QMetaObject::invokeMethod(QCoreApplication::instance(), [instance]() {
                                         libvlc_media_player_stop(instance->vlcPlayer);
@@ -91,18 +129,7 @@ WallpaperInstance::WallpaperInstance(QScreen *screen, const QString &filePath, D
                                 }
                             }, this);
 
-        libvlc_state_t state = libvlc_media_player_get_state(vlcPlayer);
-        switch(state) {
-        case libvlc_NothingSpecial: qInfo() << "State: Nothing special"; break;
-        case libvlc_Opening: qInfo() << "State: Opening"; break;
-        case libvlc_Buffering: qInfo() << "State: Buffering"; break;
-        case libvlc_Playing: qInfo() << "State: Playing"; break;
-        case libvlc_Paused: qInfo() << "State: Paused"; break;
-        case libvlc_Stopped: qInfo() << "State: Stopped"; break;
-        case libvlc_Ended: qInfo() << "State: Ended"; break;
-        case libvlc_Error: qInfo() << "State: Error"; break;
-        default: qInfo() << "State: Unknown"; break;
-        }
+
 
         // make vlc loop second approach to do loop, but its not smooth n optimize
         // loopTimer = new QTimer();

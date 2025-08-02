@@ -31,6 +31,10 @@ public:
     void stopWallpaper();
     QString setCurrentWallpaperPath(const QString &newCurrentWallpaperPath);
 
+    void setMuteVideo(bool status);
+    void setLoopVideo(bool status);
+    void setVideoSoundVolume(int vol);
+    void videoPauseOrResume();
 private:
     Display* display = nullptr;
     Window desktopWindow;
@@ -38,7 +42,7 @@ private:
     QList<QMovie*> movies;
     Window findDesktopWindow(Display* display);
 
-    QList<WallpaperInstance*> wallpaperInstances;
+    QList<WallpaperInstance*> wallpaperInstances;//for multiple monitor support
 };
 
 #endif

@@ -42,6 +42,11 @@ public:
     Q_INVOKABLE void setRunOnStartUp(const QString& status);
     Q_INVOKABLE void setAutoPause(const QString& status);
 
+    Q_INVOKABLE void setVideoLoop(const QString& status);
+    Q_INVOKABLE void setVideoMute(const QString& status);
+    Q_INVOKABLE void setVideoVolume(const QString& vol);
+    Q_INVOKABLE void setVideoPauseResume();
+
 private:
     WallpaperManager wallpaperManager;
     SettingsManager settingsManager;

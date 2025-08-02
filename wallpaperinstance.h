@@ -20,12 +20,20 @@ struct WallpaperInstance {
     QWidget* videoWidget = nullptr;
     libvlc_instance_t* vlcInstance = nullptr;
     libvlc_media_player_t* vlcPlayer = nullptr;
+    libvlc_event_manager_t* eventManager;//for loop
 
     libvlc_media_t* vlcMedia = nullptr;
     QTimer* loopTimer = nullptr;
-    bool isLoopEnabled = false;
 
 
+    bool isVlcLoopEnabled;
+    bool isVlcSoundMuted;
+    int videoSoundVolume;
+
+    void loopVideo(bool loopStatus);
+    void muteVideoSound(bool mute);
+    void setVideoSoundVolume(int vol);
+    void pauseResume();
     WallpaperInstance(QScreen *screen, const QString &filePath, Display *display, Window desktopWindow);
 
     ~WallpaperInstance();

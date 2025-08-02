@@ -74,7 +74,6 @@ bool Backend::setupTrayIcon()
     QObject::connect(startAction, &QAction::triggered, &wallpaperManager, &WallpaperManager::startWallpaper);
     QObject::connect(stopAction, &QAction::triggered, &wallpaperManager, &WallpaperManager::stopWallpaper);
 
-
     QObject::connect(&m_trayIcon, &QSystemTrayIcon::activated,
                      [this](QSystemTrayIcon::ActivationReason reason)
                      {
@@ -169,6 +168,32 @@ void Backend::setRunOnStartUp(const QString &status)
 void Backend::setAutoPause(const QString &status)
 {
     //code
+}
+
+void Backend::setVideoLoop(const QString &status)
+{
+    if (status.compare("true", Qt::CaseInsensitive) == 0 || status == "1")
+        wallpaperManager.setLoopVideo(true);
+    else
+        wallpaperManager.setLoopVideo(false);
+}
+
+void Backend::setVideoMute(const QString &status)
+{
+    if (status.compare("true", Qt::CaseInsensitive) == 0 || status == "1")
+        wallpaperManager.setMuteVideo(true);
+    else
+        wallpaperManager.setMuteVideo(false);
+}
+
+void Backend::setVideoVolume(const QString &vol)
+{
+    wallpaperManager.setVideoSoundVolume(vol.toInt());
+}
+
+void Backend::setVideoPauseResume()
+{
+    wallpaperManager.videoPauseOrResume();
 }
 
 void Backend::initApp()
