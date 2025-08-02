@@ -38,6 +38,7 @@ WallpaperInstance::WallpaperInstance(QScreen *screen, const QString &filePath, D
         QWidget* container = new QWidget(nullptr);
         container->setWindowFlags(Qt::FramelessWindowHint);
         container->setAttribute(Qt::WA_TransparentForMouseEvents);
+        container->setAttribute(Qt::WA_Disabled);
         container->setFocusPolicy(Qt::NoFocus);
         container->resize(geo.size());
         container->move(geo.topLeft());
