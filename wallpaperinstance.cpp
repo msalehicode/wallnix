@@ -11,6 +11,7 @@ WallpaperInstance::WallpaperInstance(QScreen *screen, const QString &filePath, D
         gifLabel->setWindowFlags(Qt::FramelessWindowHint | Qt::X11BypassWindowManagerHint);
         gifLabel->setAttribute(Qt::WA_TransparentForMouseEvents);
         gifLabel->setFocusPolicy(Qt::NoFocus);
+        gifLabel->setAttribute(Qt::WA_Disabled);
 
         gifLabel->resize(geo.size());
         gifLabel->move(geo.topLeft());
